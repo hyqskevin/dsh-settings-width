@@ -1,9 +1,14 @@
 {
   "name": "dsh-settings-width",
-  "version": "0.1.0",
-  "description": "Override dsh Settings dialog width (default 380px → configurable, default 720px)",
+  "version": "0.2.0",
+  "description": "Widen the dsh Web UI Settings dialog (default 380px → 720px; runtime override via __setSettingsWidth)",
   "private": true,
   "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
   "dsh": {
     "bundle": {
       "patch": "./cordis.patch.yml"

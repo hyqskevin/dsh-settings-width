@@ -6,22 +6,21 @@
 
 ## 中文
 
-调宽 DSH 网页**设置弹窗**的宽度。DSH 原生把设置弹窗限制在 `width: min(380px, 100%)`，在大屏显示器上阅读表单字段、表格行非常局促；本插件通过客户端 CSS 把这个弹窗覆盖为**默认 720px**（可调）。
+调宽 DSH 网页**设置弹窗**的宽度。DSH 原生把设置弹窗限制在 `width: min(380px, 100%)`，在大屏显示器上阅读表单字段、表格行非常局促；本插件在弹窗右缘加上**可拖拽的把手**（类似 dsh-chat-width 的聊天宽度把手），实时调整宽度。
 
 ### 调整宽度
 
 两种方式，任选其一：
 
-1. **浏览器开发者控制台**（F12 → Console）：
+1. **拖拽设置弹窗右缘把手**（推荐）：鼠标按住把手左右拖，**1:1 跟手**，松开自动记忆到 `localStorage.dsh_settings_width`。**双击把手**恢复默认 720px。把手的半透明样式与主题融合，悬停/拖动时高亮。
+2. **浏览器开发者控制台**（F12 → Console）：
    ```js
    __setSettingsWidth(960)    // 设成 960px
    __setSettingsWidth(1200)   // 设成 1200px
    ```
    范围 **360 ~ 1600**，越界自动回退到默认。
 
-2. **直接编辑 localStorage**：键名 `dsh_settings_width`，数值字符串（如 `"960"`）。
-
-选择会持久化到 `localStorage`，下次打开设置弹窗仍然生效。
+直接编辑 localStorage 也行（键名 `dsh_settings_width`，数值字符串如 `"960"`）。选择会持久化到 `localStorage`，下次打开设置弹窗仍然生效。
 
 ### 安装
 
@@ -46,8 +45,9 @@ pnpm add link:/path/to/dsh-settings-width
 
 1. 通过 `window.__ModuleLoader__.load()` 注册为 DSH 客户端模块；
 2. `apply(ctx)` 内用 `ctx.effect()` 注入 `<style data-dsh-settings-width>`；
-3. 用双类选择器 `._dialog_w1urq_22._dialog_w1urq_22` 把特异性提到 `(0,2,0)`，压过 DSH 自带规则的 `(0,1,0)`，与样式加载顺序无关；
-4. localStorage 记忆选择，CSS 实时刷新。
+3. CSS 用**稳定选择器**（`[role="dialog"][aria-modal="true"][data-dsh-settings-width]`） + 加倍类名（`.VOzbGW_panel.VOzbGW_panel`）覆盖 DSH 默认 `width: min(380px, 100%)`，特异性 `(0,2,0)`；
+4. 注入**绝对定位的把手**到 panel 右缘（`right: 0; transform: translate(50%, -50%)`），监听 `pointerdown` / `pointermove` / `pointerup`，实时设 `--dsh-settings-width`；
+5. localStorage 记忆选择，松手时持久化。
 
 ### 卸载
 
