@@ -62,11 +62,13 @@ pnpm install
 
 ## English
 
-Widen the **Settings dialog** in DeepSeek Harness Web UI. DSH ships the Settings dialog at `width: min(380px, 100%)` — too narrow on wide monitors. This plugin overrides that rule to **720px by default** (configurable).
+Widen the **Settings dialog** in DeepSeek Harness Web UI. DSH ships the Settings dialog at `width: min(380px, 100%)` — too narrow on wide monitors. This plugin appends a **draggable resize handle** to the panel's right edge (modeled after `dsh-chat-width`) so you can resize it live with the mouse.
 
 ### Adjust width
 
-**Option 1: Browser DevTools Console** (F12 → Console):
+**Option 1: Drag the right-edge handle** (recommended). Grab the vertical grip and pull — the panel resizes 1:1 with pointer motion; release to persist to `localStorage.dsh_settings_width`. **Double-click** the handle to reset to the default 720px. The grip's translucent style blends with the theme; hover/drag highlight it.
+
+**Option 2: Browser DevTools Console** (F12 → Console):
 
 ```js
 __setSettingsWidth(960)    // Set to 960px
@@ -75,7 +77,7 @@ __setSettingsWidth(1200)   // Set to 1200px
 
 Range **360 ~ 1600**, values out of range fall back to default.
 
-**Option 2: Edit localStorage directly**: key `dsh_settings_width`, numeric string (e.g. `"960"`).
+**Option 3: Edit localStorage directly**: key `dsh_settings_width`, numeric string (e.g. `"960"`).
 
 Persisted across sessions.
 
@@ -102,8 +104,11 @@ pnpm add link:/path/to/dsh-settings-width
 
 1. Register as a DSH client module via `window.__ModuleLoader__.load()`;
 2. Inject `<style data-dsh-settings-width>` from `apply(ctx)` via `ctx.effect()`;
-3. Doubled selector `._dialog_w1urq_22._dialog_w1urq_22` raises specificity to `(0,2,0)`, beating DSH's `(0,1,0)` regardless of style load order;
-4. Persist preference in localStorage; CSS regenerates on change.
+3. CSS targets a **stable selector** — `[role="dialog"][aria-modal="true"][data-dsh-settings-width]` — plus the doubled hashed-class fallback `.VOzbGW_panel.VOzbGW_panel` so the rule survives class-hash renames. Specificity `(0,2,0)` beats DSH's `(0,1,0)`.
+4. Append an absolutely-positioned `<div class="dsh-sw-handle">` to the panel (`right: 0; transform: translate(50%,-50%)`). It listens for `pointerdown` / `pointermove` / `pointerup` on both itself AND `window` (robust to `setPointerCapture`) and updates `--dsh-settings-width` live so the panel width follows the cursor.
+5. Persist on pointer-up to `localStorage.dsh_settings_width`.
+
+> **Caveat (v0.2.0 fix)**: The CSS rule does NOT use `!important` on the `--dsh-settings-width` variable. Earlier versions did — that locked the variable to its load-time value and made drag updates have no visible effect, because inline `style.setProperty()` cannot override an `!important` CSS variable defined in a stylesheet. The fix is to let inline style win (no `!important` on the variable).
 
 ### Uninstall
 
